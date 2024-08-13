@@ -1,57 +1,63 @@
 #!/usr/bin/python3
-"""Log parsing script."""
-
 import sys
 import signal
 
 
-def print_stats(total_size, status_codes):
-    """Print the statistics."""
-    print(f"File size: {total_size}")
-    for code in sorted(status_codes.keys()):
+def print_stats(file_size, status_codes):
+    """Print the current statistics"""
+    print("File size: {}".format(file_size))
+    for code in sorted(status_codes):
         if status_codes[code] > 0:
-            print(f"{code}: {status_codes[code]}")
+            print("{}: {}".format(code, status_codes[code]))
 
 
-def parse_line(line, total_size, status_codes):
-    """Parse a single line of log."""
+def parse_line(line):
+    """Parse a single line of log"""
     try:
         parts = line.split()
-        size = int(parts[-1])
-        status = int(parts[-2])
-        if status in status_codes:
-            status_codes[status] += 1
-        return total_size + size
+        if len(parts) != 9:
+            return None, None
+
+        file_size = int(parts[-1])
+        status_code = int(parts[-2])
+
+        return file_size, status_code
     except (ValueError, IndexError):
-        return total_size
+        return None, None
 
 
 def main():
-    """Main function to process the logs."""
-    total_size = 0
-    status_codes = {200: 0, 301: 0, 400: 0, 401: 0, 403: 0, 404: 0, 405: 0, 500: 0}
+    file_size = 0
+    status_codes = {
+        200: 0, 301: 0, 400: 0, 401: 0,
+        403: 0, 404: 0, 405: 0, 500: 0
+    }
     line_count = 0
 
     def signal_handler(sig, frame):
-        """Handle CTRL+C interrupt."""
-        print_stats(total_size, status_codes)
+        """Handle the keyboard interruption signal"""
+        print_stats(file_size, status_codes)
         sys.exit(0)
 
+    # Register the signal handler
     signal.signal(signal.SIGINT, signal_handler)
 
     try:
         for line in sys.stdin:
-            total_size = parse_line(line.strip(), total_size, status_codes)
+            file_size_part, status_code_part = parse_line(line)
+            if file_size_part is not None:
+                file_size += file_size_part
+                if status_code_part in status_codes:
+                    status_codes[status_code_part] += 1
+
             line_count += 1
-
             if line_count % 10 == 0:
-                print_stats(total_size, status_codes)
+                print_stats(file_size, status_codes)
 
-    except KeyboardInterrupt:
-        print_stats(total_size, status_codes)
-        raise
-
-    print_stats(total_size, status_codes)
+    except Exception as e:
+        print("Error: {}".format(str(e)))
+    finally:
+        print_stats(file_size, status_codes)
 
 
 if __name__ == "__main__":
