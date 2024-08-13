@@ -1,10 +1,12 @@
 #!/usr/bin/python3
+"""Log parsing script that reads from stdin and computes metrics."""
+
 import sys
 import signal
 
 
 def print_stats(file_size, status_codes):
-    """Print the current statistics"""
+    """Print the current statistics."""
     print("File size: {}".format(file_size))
     for code in sorted(status_codes):
         if status_codes[code] > 0:
@@ -12,10 +14,10 @@ def print_stats(file_size, status_codes):
 
 
 def parse_line(line):
-    """Parse a single line of log"""
+    """Parse a single line of log."""
     try:
         parts = line.split()
-        if len(parts) != 9:
+        if len(parts) < 7:
             return None, None
 
         file_size = int(parts[-1])
@@ -27,6 +29,7 @@ def parse_line(line):
 
 
 def main():
+    """Main function to process the log."""
     file_size = 0
     status_codes = {
         200: 0, 301: 0, 400: 0, 401: 0,
@@ -35,7 +38,7 @@ def main():
     line_count = 0
 
     def signal_handler(sig, frame):
-        """Handle the keyboard interruption signal"""
+        """Handle the keyboard interruption signal."""
         print_stats(file_size, status_codes)
         sys.exit(0)
 
@@ -54,8 +57,8 @@ def main():
             if line_count % 10 == 0:
                 print_stats(file_size, status_codes)
 
-    except Exception as e:
-        print("Error: {}".format(str(e)))
+    except Exception:
+        pass
     finally:
         print_stats(file_size, status_codes)
 
