@@ -9,7 +9,8 @@ def validUTF8(data):
     Determines if a given data set represents a valid UTF-8 encoding.
 
     Args:
-    data (list of int): A list of integers where each integer represents 1 byte of data.
+    data (list of int): A list of integers where each integer represents
+                        1 byte of data.
 
     Returns:
     bool: True if data is a valid UTF-8 encoding, else False.
@@ -53,5 +54,6 @@ def validUTF8(data):
 if __name__ == "__main__":
     # Test cases
     print(validUTF8([65]))  # True
-    print(validUTF8([80, 121, 116, 104, 111, 110, 32, 105, 115, 32, 99, 111, 111, 108, 33]))  # True
+    print(validUTF8([80, 121, 116, 104, 111, 110, 32, 105,
+                     115, 32, 99, 111, 111, 108, 33]))  # True
     print(validUTF8([229, 65, 127, 256]))  # False
